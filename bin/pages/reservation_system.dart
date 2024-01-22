@@ -1,26 +1,8 @@
 import 'dart:io';
 
-class Food {
-  String name;
-  double price;
-  String ingredients;
-  String description;
-
-  Food(this.name, this.price, this.ingredients, this.description);
-}
-
-class Restaurant {
-  String name = "Eleven Madison Park Restaurant";
-  String brand = "Make It Nice";
-  String location = "New York City, New York, USA";
-  String website = "www.eleven-madison-park-restaurant.com";
-}
-
-class User {
-  String name = '';
-  String family = '';
-  String email = '';
-}
+import '../models/food.dart';
+import '../models/restaurant.dart';
+import '../models/user.dart';
 
 class ReservationSystem {
   Restaurant restaurant = Restaurant();
@@ -29,7 +11,8 @@ class ReservationSystem {
   List<Food> menu = [
     Food(" 🍔 Burger", 10.99, "Beef patty, lettuce, tomato, cheese",
         "Delicious burger"),
-    Food(" 🧇 Pizza", 12.99, "Tomato sauce, cheese, pepperoni", "Classic pizza"),
+    Food(
+        " 🧇 Pizza", 12.99, "Tomato sauce, cheese, pepperoni", "Classic pizza"),
     Food(" 🍝 Pasta", 8.99, "Spaghetti, marinara sauce, meatballs",
         "Italian pasta"),
     Food(" 🥗 Salad", 6.99, "Mixed greens, cherry tomatoes, dressing",
@@ -37,10 +20,10 @@ class ReservationSystem {
     Food(" 🧆 Steak", 16.99, "Grilled sirloin steak, mashed potatoes",
         "Juicy steak"),
     Food(" 🍱 Sushi", 14.99, "Rice, fish, seaweed", "Japanese sushi"),
-    Food(
-        " 🍗 Chicken Curry", 11.99, "Chicken, curry sauce, rice", "Spicy curry"),
-    Food(
-        " 🍰 Dessert", 5.99, "Chocolate cake, vanilla ice cream", "Sweet treat"),
+    Food(" 🍗 Chicken Curry", 11.99, "Chicken, curry sauce, rice",
+        "Spicy curry"),
+    Food(" 🍰 Dessert", 5.99, "Chocolate cake, vanilla ice cream",
+        "Sweet treat"),
   ];
 
   List<String> orders = [];
@@ -107,8 +90,8 @@ class ReservationSystem {
       print("\t\t\t |  1.📜 Menu");
       print("\t\t\t |  2.📃 Restaurant Info");
       print("\t\t\t |  3.👨‍🍳 Staff");
-      print("\t\t\t |  4.⬅️  Exit");  
-      print("\x1B[31m \t\t\t -----------------------\x1B[0m");     
+      print("\t\t\t |  4.⬅️  Exit");
+      print("\x1B[31m \t\t\t -----------------------\x1B[0m");
 
       stdout.write("Enter your choice: ");
       var choice = int.parse(stdin.readLineSync()!);
@@ -339,9 +322,4 @@ class ReservationSystem {
       print("\t\t\t Invalid order number. Please try again.");
     }
   }
-}
-
-void main() {
-  var reservationSystem = ReservationSystem();
-  reservationSystem.run();
 }
