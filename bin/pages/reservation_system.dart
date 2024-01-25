@@ -1,6 +1,8 @@
+import 'dart:developer';
 import 'dart:io';
 
 import '../data/food.dart';
+import '../models/order.dart';
 import '../models/restaurant.dart';
 import '../models/user.dart';
 import '../utils/methods.dart';
@@ -9,8 +11,8 @@ class ReservationSystem {
   Restaurant restaurant = Restaurant();
   User user = User();
 
-  List<String> orders = [];
-  String staffPassword = "password123";
+  List<Order> orders = [];
+  String staffPassword = "admin1221";
 
   void enterUserInfo() {
     stdout.write("Enter your name: ");
@@ -23,7 +25,7 @@ class ReservationSystem {
       stdout.write("Enter your email: ");
       user.email = stdin.readLineSync()!;
 
-      if (user.email.contains("@gmail.com") || user.email.contains("")) {
+      if (user.email.contains("@gmail.com") || user.email.contains("@")) {
         break;
       } else {
         print("Please enter a valid Gmail address.");
@@ -42,55 +44,121 @@ class ReservationSystem {
       print("\t\t\t |  4.⬅️  Exit");
       print("\x1B[31m \t\t\t -----------------------\x1B[0m");
 
-      stdout.write("Enter your choice: ");
-      var choice = int.parse(stdin.readLineSync()!);
+      int choice = ReservationService.readInt("Enter your choice: ");
 
-      switch (choice) {
-        case 1:
-          enterUserInfo();
-          handleMenu();
-          break;
-        case 2:
-          ReservationService.displayRestaurantInfo();
-          break;
-        case 3:
-          handleStaff();
-          break;
-        case 4:
-          print("\x1B[33m\n \t\t 👋 Exiting the program. Goodbye!👋\x1B[0m \n");
-          exit(0);
-        default:
-          print("Invalid choice. Please try again.");
+      try {
+        switch (choice) {
+          case 1:
+            enterUserInfo();
+            handleMenu();
+            break;
+          case 2:
+            ReservationService.displayRestaurantInfo();
+            break;
+          case 3:
+            handleStaff();
+            break;
+          case 4:
+            print(
+                "\x1B[33m\n \t\t 👋 Exiting the program. Goodbye!👋\x1B[0m \n");
+            exit(0);
+          default:
+            print("Invalid choice. Please try again.");
+        }
+      } catch (e) {
+        log(e.toString());
       }
     }
   }
 
   void handleMenu() {
     while (true) {
-      ReservationService.displayMenu();
-
       print("\x1B[31m\n \t\t\t ------ Menu Options ------\x1B[0m");
       print("\t\t\t | 1. Order Food");
       print("\t\t\t | 2. Exit to Main Menu");
       print("\x1B[31m \t\t\t --------------------------\x1B[0m");
+      ReservationService.displayMenu();
 
-      stdout.write("Enter your choice: ");
-      var choice = int.parse(stdin.readLineSync()!);
-
-      switch (choice) {
-        case 1:
-          handleOrderFood();
-          break;
-        case 2:
-          return;
-        default:
-          print("Invalid choice. Please try again.");
+      int choice = ReservationService.readInt("Enter your choice: ");
+      try {
+        switch (choice) {
+          case 1:
+            handleOrderFood();
+            break;
+          case 2:
+            return;
+          default:
+            print("Invalid choice. Please try again.");
+        }
+      } catch (e) {
+        log(e.toString());
       }
     }
   }
 
+  String readNonEmptyString(String prompt) {
+    String? input;
+    do {
+      stdout.write(prompt);
+      input = stdin.readLineSync();
+      if (input == null || input.isEmpty) {
+        print("Input cannot be empty. Please enter a value.");
+      }
+    } while (input == null || input.isEmpty);
+    return input;
+  }
+
+  int readPositiveInt(String prompt) {
+    int number;
+    do {
+      number = ReservationService.readInt(prompt);
+      if (number < 1) {
+        print("Number must be positive.");
+      }
+    } while (number < 1);
+    return number;
+  }
+
+  String readValidDate(String prompt) {
+    RegExp dateRegex =
+        RegExp(r"^(0[1-9]|[12][0-9]|3[01])/(0[1-9]|1[012])/\d{4}$");
+    String date;
+    do {
+      date = readNonEmptyString(prompt);
+      if (!dateRegex.hasMatch(date)) {
+        print("Invalid date format. Please enter in dd/mm/yyyy format.");
+      }
+    } while (!dateRegex.hasMatch(date));
+    return date;
+  }
+
+  String readValidTime(String prompt) {
+    RegExp timeRegex = RegExp(r"^([01]?[0-9]|2[0-3]):[0-5][0-9]$");
+    String time;
+    do {
+      time = readNonEmptyString(prompt);
+      if (!timeRegex.hasMatch(time)) {
+        print("Invalid time format. Please enter in HH:MM format.");
+      }
+    } while (!timeRegex.hasMatch(time));
+    return time;
+  }
+
   void handleOrderFood() {
-    stdout.write("Enter the item numbers you want to order ");
+    var numberOfPeople =
+        readPositiveInt("Enter the number of people for the reservation: ");
+    var reservationDate =
+        readValidDate("Enter the date for the reservation (dd/mm/yyyy): ");
+    var reservationTime =
+        readValidTime("Enter the time for the reservation (HH:MM): ");
+
+    stdout.write("Enter any special requests (or type 'none'): ");
+    var specialRequests = stdin.readLineSync()!;
+
+    stdout.write("Enter a contact number for the reservation: ");
+    var contactNumber = stdin.readLineSync()!;
+
+    stdout.write("Enter the meal number which you want to order: ");
     var itemNumbers = stdin
         .readLineSync()!
         .split(',')
@@ -102,31 +170,33 @@ class ReservationSystem {
     for (var itemNumber in itemNumbers) {
       if (itemNumber >= 1 && itemNumber <= menu.length) {
         var food = menu[itemNumber - 1];
-        stdout.write("Enter the quantity of ${food.name}: ");
-        var quantity = int.parse(stdin.readLineSync()!);
+        int quantity =
+            ReservationService.readInt("Enter the quantity of ${food.name}: ");
 
         var itemCost = food.price * quantity;
         totalCost += itemCost;
-
-        orders
-            .add("${food.name} x$quantity - \$${itemCost.toStringAsFixed(2)}");
+        orders.add(Order( user.name, food.name, quantity, itemCost, reservationDate,
+            reservationTime, specialRequests, contactNumber));
       } else {
-        print("Invalid item number. Please try again.");
+        print("Invalid meal number. Please try again.");
         return;
       }
     }
 
     print(
-        "\t\t\t 🎉 Order placed successfully! Total Cost: \$${totalCost.toStringAsFixed(2)}");
+        "\n\t\t\t 🎉 Order placed successfully! Total Cost: \$${totalCost.toStringAsFixed(2)}");
 
-    stdout.write("Enter the number of people for the reservation: ");
-    var numberOfPeople = int.parse(stdin.readLineSync()!);
-
-    print("Reservation confirmed for $numberOfPeople people.");
+    print("\nYour Order Details:");
+    print("Date: $reservationDate");
+    print("Time: $reservationTime");
+    print("Special Requests: $specialRequests");
+    print("Contact Number: $contactNumber");
+    print("Total Cost: \$${totalCost.toStringAsFixed(2)}");
+    print("Reservation confirmed for $numberOfPeople people.\n");
   }
 
   void handleStaff() {
-    stdout.write("Enter staff password 🔐:");
+    stdout.write("🔐 Enter password:");
     var enteredPassword = stdin.readLineSync()!;
 
     if (enteredPassword == staffPassword) {
@@ -171,10 +241,17 @@ class ReservationSystem {
   }
 
   void displayOrderedOrders() {
+    const int consoleWidth = 80;
     print("\x1B[35m\n \t\t\t ----- 📋 Ordered Orders -----\x1B[0m");
-    print("\t\t\t Ordered by : ${user.name}");
+
+    int index = 1;
     for (var order in orders) {
-      print(order);
+      String orderLine = "Order #$index: $order";
+      int padding = (consoleWidth - orderLine.length) ~/ 2;
+      padding = padding > 0 ? padding : 0;
+      String paddedLine = ' ' * padding + orderLine;
+      print(paddedLine);
+      index++;
     }
   }
 

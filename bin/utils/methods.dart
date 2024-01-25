@@ -5,6 +5,26 @@ import '../models/food.dart';
 import '../models/restaurant.dart';
 
 class ReservationService {
+  static String readLine() {
+    String? input = stdin.readLineSync();
+    while (input == null || input.isEmpty) {
+      print("\n Input cannot be empty. Please enter a value!\n");
+      input = stdin.readLineSync();
+    }
+    return input;
+  }
+
+  static int readInt(String prompt) {
+    while (true) {
+      stdout.write(prompt);
+      var input = readLine();
+      try {
+        return int.parse(input);
+      } catch (e) {
+        print("Please enter a valid number.");
+      }
+    }
+  }
 
   //! THIS IS WELCOME SPEECH
   static void displayWelcomeSpeech() {
@@ -15,10 +35,11 @@ class ReservationService {
 
   //! DISPLAY FOODS MENU
   static void displayMenu() {
-    print("\x1B[36m\n \t\t\t ----- 🍽️ Menu ----- \x1B[0m");
+    print("\x1B[36m\n \t\t\t ----- 🍽️  Menu Foods ----- \x1B[0m");
     for (var i = 0; i < menu.length; i++) {
       print(" \t\t\t | ${i + 1}. ${menu[i].name} - \$${menu[i].price}");
     }
+    print("\x1B[36m \t\t\t --------------------------- \x1B[0m");
   }
 
   //! SHOW RESTAURANT INFO
@@ -36,12 +57,12 @@ class ReservationService {
   static void displayStaffMenu() {
     print("\x1B[33m\n \t\t\t ------ 🛠 Staff Menu -------\x1B[0m");
     print(" \t\t\t | 1.👀 View Restaurant Menu");
-    print(" \t\t\t | 2.👁 View Ordered Orders");
-    print(" \t\t\t | 3.➕ Add Item to Menu");
-    print(" \t\t\t | 4.💲 Change Price of Item");
-    print(" \t\t\t | 5.📝 Edit Item in Menu");
-    print(" \t\t\t | 6.🗑 Delete Item from Menu");
-    print(" \t\t\t | 7.❌ Cancel Order");
+    print(" \t\t\t | 2.👁 View Reservations");
+    print(" \t\t\t | 3.➕ Add a food to Menu");
+    print(" \t\t\t | 4.💲 Change price of a food");
+    print(" \t\t\t | 5.📝 Edit a food in Menu");
+    print(" \t\t\t | 6.🗑 Delete a food from Menu");
+    print(" \t\t\t | 7.❌ Cancel Reservation");
     print(" \t\t\t | 8.🚪 Exit Staff Section");
     print("\x1B[33m \t\t\t ---------------------------\x1B[0m");
   }
@@ -49,8 +70,7 @@ class ReservationService {
   //! DELETING FROM MENU
   static void deleteItemFromMenu() {
     ReservationService.displayMenu();
-    stdout.write("Enter the item number you want to delete: ");
-    var itemNumber = int.parse(stdin.readLineSync()!) - 1;
+    int itemNumber = readInt("Enter the item number you want to delete: ");
 
     if (itemNumber >= 0 && itemNumber < menu.length) {
       var food = menu.removeAt(itemNumber);
@@ -129,5 +149,4 @@ class ReservationService {
       print("Invalid item number. Please try again.");
     }
   }
-
 }
